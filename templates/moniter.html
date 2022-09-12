@@ -117,6 +117,7 @@ add button
                     {
                         bt.setAttribute("name","0")
                         bt.setAttribute("class","btn btn-secondary my-2")
+                        bt.onclick = function(){trackProgress(this.id)}
                     }
                     rowLayout.appendChild(bt)
                 }
@@ -261,6 +262,17 @@ interval function
     }
 
 
+/*
+track progress
+*/
+    function trackProgress(id)
+    {
+        var convertId = ""
+        for(var i=0; i<id.length; i++){
+            if(parseInt(id[i])) convertId += ('a'.charCodeAt(0)+parseInt(id[i])).toString()
+        }
+        $("#"+convertId).modal("show")
+    }
 /*
 show progress
 */

@@ -74,3 +74,23 @@ def simulate():
         res["logContent"] = logContent
         return jsonify(res)
 
+"""
+url for track progress when a server is not available
+"""
+"""
+@app.route('/trackProgress')
+def track():
+    serverId = request.args.get("id")
+    target = serverId
+    if(target in simulatorInstances):
+        simulator = simulatorInstances[target]
+    ifFinished = simulator.getProgress()
+    ipName = simulator.getIpName()
+    logThread = ReadLog.LogThread(ipName=ipName)
+    logThread.start()
+    logContent = logThread.join()
+    res = {}
+    res["isFinished"] = ifFinished
+    res["logContent"] = logContent
+    return jsonify(res)
+"""

@@ -1,0 +1,10 @@
+
+Nucleated: 0 did_extend: 1 model: 0000023B956EEC30
+Remesh? YES
+Solving: linear elastic deformation in BlockGeometry
+    Max cycles:                   39
+    Last Solver Error:            -831
+    Last Solver Residual:         1.13879e-06
+    Last Solver Residual Ratio:   1.36919e-14
+
+*******BlockGeometry::LinearElasticDeformation********* Solver finished: Step: 0 Transient? false

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.css">
+</head>
+
+<body>
+    <!--header logo-->
+    <header>
+        <div class="collapse bg-dark" id="navbarHeader">
+          <div class="container">
+            <div class="row">
+              <div class="col-sm-8 col-md-7 py-4">
+                <h4 class="text-white">About</h4>
+                <p class="text-muted">This is an Interface for running simulator on remote machines, which enables researcher to check resource, mount simulator, and monitor progress</p>
+              </div>
+              <div class="col-sm-4 offset-md-1 py-4">
+                <h4 class="text-white">Contact</h4>
+                <ul class="list-unstyled">
+                  <li><a href="#" class="text-white">Tianchen Lu</a></li>
+                  <li><a href="#" class="text-white">https://github.com/acse-tl221</a></li>
+                  <li><a href="#" class="text-white">tl221@ic.ac.uk</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="navbar navbar-dark bg-dark box-shadow">
+          <div class="container d-flex justify-content-between">
+            <a href="#" class="navbar-brand d-flex align-items-center">
+              <strong>Remote machine control system</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          </div>
+        </div>
+    </header>
+
+    <main role="main">
+        <section class="jumbotron text-center">
+            <div class="container">
+                <h1 class="jumbotron-heading">checkResource</h1>
+                <p>
+                    <button class="btn btn-primary my-2" onclick="check()">check availability</button>
+                </p>
+            </div>
+
+            <div class="container">
+                    <h1 class="jumbotron-heading">Run simulator</h1>
+                    <p id = "btArea"></p>
+            </div>
+        </section>
+    </main>
+    
+
+</body>
+
+<script type="text/javascript">
+/*
+global variable
+*/
+var modal_set = new Set()
+/*
+check resource
+*/
+    function check(){
+        $.ajax({
+                url: '/check',
+                success: function (res) 
+                {
+                    console.log(res)
+                    clearButton()
+                    addButton(res)
+                },
+                complete: function () 
+                {
+
+                }
+            })
+    }
+
+/*
+clear button
+*/
+    function clearButton(){
+        var buttonArea = document.getElementById("btArea")
+        while (buttonArea.lastElementChild) {
+            buttonArea.removeChild(buttonArea.lastElementChild);
+        }
+    }
+/*
+add button
+*/
+    function addButton(res){
+        var buttonArea = document.getElementById("btArea")
+        for(var key in res){
+            if(key === "server"){
+                for(var server in res[key]){
+                    var bt = document.createElement("button")
+                    var rowLayout = document.createElement("div")
+                    rowLayout.setAttribute("class","row")
+                    buttonArea.appendChild(rowLayout)
+                    bt.setAttribute("id",server)
+                    bt.style.width = "10%"
+                    bt.style.marginLeft = "45%"
+                    bt.style.marginRight = "45%"
+                    bt.innerText = server
+                    if(res[key][server])
+                    {
+                        bt.setAttribute("name","1")
+                        bt.setAttribute("class","btn btn-primary my-2")
+                        bt.onclick = function(){simulate(this.id)}
+                    }
+                    else
+                    {
+                        bt.setAttribute("name","0")
+                        bt.setAttribute("class","btn btn-secondary my-2")
+                    }
+                    rowLayout.appendChild(bt)
+                }
+            }
+        }
+    }
+
+/*
+Run commands on server
+*/
+    function simulate(id){
+        var convertId = ""
+        for(var i=0; i<id.length; i++){
+            if(parseInt(id[i])) convertId += ('a'.charCodeAt(0)+parseInt(id[i])).toString()
+        }
+        var bt = document.getElementById(id)
+        var ifRunning = parseInt(bt.name)
+        console.log(ifRunning)
+        if(ifRunning === 2)
+        {
+            console.log("running")
+            $("#"+convertId).modal("show")
+        }
+        else if(ifRunning === 1)
+        {
+            console.log("initial")
+            bt.setAttribute("name","2")
+            prepareHint(convertId)
+            getResponse(id)
+        }
+    }
+
+/*
+prepare hint
+*/
+function prepareHint(convertId){
+    if(modal_set.has(convertId))
+    {
+        var curModal = document.getElementById(convertId)
+        var modelContent = document.getElementById("content"+convertId) 
+        var child = modelContent.lastElementChild;  
+        while (child) { 
+            modelContent.removeChild(child); 
+            child = modelContent.lastElementChild; 
+        }
+        curModal.removeChild(modelContent)
+        document.body.removeChild(curModal)
+    }
+    else{
+        modal_set.add(convertId)
+    }
+    var newmodal = document.createElement("div");
+    newmodal.setAttribute("class","modal fade")
+    newmodal.setAttribute("role","dialog")
+    newmodal.setAttribute("tabindex","-1")
+    newmodal.setAttribute("aria-labelledby","exampleModalLongTitle")
+    newmodal.setAttribute("aria-hidden","true")
+    newmodal.setAttribute("id",convertId)
+    newmodal.innerHTML = `
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="logModalTitle">Simulator Monitor</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="logContent">
+                
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+        </div>
+    `;
+    document.body.appendChild(newmodal)
+    $("#"+convertId).modal("show")
+    var ModalLogContent = document.getElementById("logContent")
+    ModalLogContent.id = "content"+convertId
+    var newLine = document.createElement("div")
+    newLine.setAttribute("id","hint1")
+    newLine.setAttribute("class","row")
+    ModalLogContent.appendChild(newLine)
+    var hint = document.createElement("h6")
+    hint.innerHTML = "Connecting to the machine, wait a few moments"
+    newLine.appendChild(hint)
+}
+
+
+/*
+hint is connected
+*/
+function ConnectedHint(convertId){
+    var ModalLogContent = document.getElementById("content"+convertId)
+    var newLine = document.createElement("div")
+    newLine.setAttribute("id","hint2")
+    newLine.setAttribute("class","row")
+    ModalLogContent.appendChild(newLine)
+    var hint = document.createElement("h6")
+    hint.innerHTML = "Simulator has been launched, progress will be displayed below"
+    newLine.appendChild(hint)
+}
+
+
+/*
+interval function
+*/
+    function getResponse(id){
+        var convertId = ""
+        for(var i=0; i<id.length; i++){
+            if(parseInt(id[i])) convertId += ('a'.charCodeAt(0)+parseInt(id[i])).toString()
+        }
+        var isConnected = 0
+        var isFinished = false;
+        var func = setInterval(function() 
+        {   
+            $.ajax({
+                url: '/simulate',
+                data: {"isConnected":isConnected,"id":id},
+                success: function (res) 
+                {
+                    console.log(res)
+                    if(isConnected) showProgress(res.logContent,convertId)
+                    else ConnectedHint(convertId)
+                    isFinished = res.isFinished
+                    isConnected = res.isConnected;
+                    var bt = document.getElementById(id)
+                    if(isFinished) {bt.setAttribute("name","1");clearInterval(func);}
+                },
+                error : function(e){
+                console.log(e.status);
+                console.log(e.responseText);
+                ifRunning = false
+                clearInterval(func);
+                },
+                complete: function () 
+                {
+
+                }
+            });
+        }, 1000 * 60 * 0.1);      
+    }
+
+
+/*
+show progress
+*/
+    function showProgress(logContent,convertId){
+        var ModalLogContent = document.getElementById("content"+convertId)
+        for(var key in logContent){
+           var logFileName = key
+           var logFileContent = logContent[key]
+           var logFileGroup = document.getElementById(logFileName+convertId)
+           if(logFileGroup!=null)
+           {
+            var content = document.getElementById(convertId+logFileName+"content")
+            content.innerHTML = logFileContent
+           }
+           else
+           {
+            var newFileGroup = document.createElement("div")
+            newFileGroup.setAttribute("id",logFileName+convertId)
+            newFileGroup.setAttribute("class","card")
+            ModalLogContent.appendChild(newFileGroup)
+            var title = document.createElement("h5")
+            title.setAttribute("class","card-header")
+            title.innerHTML = logFileName
+            newFileGroup.appendChild(title)
+            var contentBody = document.createElement("div")
+            contentBody.setAttribute("class","card-body")
+            newFileGroup.appendChild(contentBody)
+            var content = document.createElement("p")
+            content.setAttribute("style","white-space: pre-line")
+            content.setAttribute("id",convertId+logFileName+"content")
+            contentBody.appendChild(content)
+           }
+       }
+    }
+
+</script>
+<script src="../static/js/jquery-2.2.4.min.js"></script>
+<script src="../static/bootstrap/js/bootstrap.js"></script>
+</html>

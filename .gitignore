@@ -1,0 +1,4 @@
+
+*.pyc
+static/.DS_Store
+static/bootstrap/.DS_Store

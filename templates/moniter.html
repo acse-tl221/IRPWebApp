@@ -146,6 +146,7 @@ Run commands on server
             console.log("initial")
             bt.setAttribute("name","2")
             prepareHint(convertId)
+            bt.setAttribute("class","btn btn-secondary my-2")
             getResponse(id)
         }
     }
@@ -245,7 +246,7 @@ interval function
                     isFinished = res.isFinished
                     isConnected = res.isConnected;
                     var bt = document.getElementById(id)
-                    if(isFinished) {bt.setAttribute("name","1");clearInterval(func);}
+                    if(isFinished) {bt.setAttribute("name","1");bt.setAttribute("class","btn btn-primary my-2");clearInterval(func);}
                 },
                 error : function(e){
                 console.log(e.status);
